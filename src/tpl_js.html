@@ -1,0 +1,323 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  /* la barra fija cambia de alto al envolver: medirla y publicar --hdr */
+  var fixed = document.querySelector('.topfix');
+  function syncHdr(){
+    if (!fixed) return;
+    document.documentElement.style.setProperty('--hdr', fixed.offsetHeight + 'px');
+  }
+  syncHdr();
+  window.addEventListener('resize', syncHdr);
+  window.addEventListener('load', syncHdr);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncHdr);
+  var PAGE_URL = "{{URL}}";
+  /* Suscripción mensual: link real y correcto. */
+  var LINK_MENSUAL = "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=2c938084970835f601970fa1328b025b";
+  /* Aporte único: plan de 1 mes, cobra una sola vez. Pide iniciar sesión y el monto se elige en MP. */
+  var LINK_UNICO = "https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=2c9380849738e96a01973ca8940101ba";
+  var $  = function(s,r){return (r||document).querySelector(s)};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var money = function(n){ return "$" + Number(n||0).toLocaleString("es-AR"); };
+
+  /* ---------- toast ---------- */
+  var toastEl = $("#toast"), tTimer;
+  function toast(msg){
+    toastEl.textContent = msg; toastEl.classList.add("on");
+    clearTimeout(tTimer); tTimer = setTimeout(function(){ toastEl.classList.remove("on"); }, 1900);
+  }
+  function copy(text, label){
+    var done = function(){ toast((label||"Copiado") + " ✓"); };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(text, done); });
+    } else { fallback(text, done); }
+  }
+  function fallback(text, done){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly","");
+    ta.style.cssText = "position:fixed;top:-1000px;opacity:0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch(e){ toast("No se pudo copiar"); }
+    document.body.removeChild(ta);
+  }
+
+  document.addEventListener("click", function(e){
+    var b = e.target.closest("[data-cp]");
+    if (b){ copy(b.getAttribute("data-cp"), "Copiado"); return; }
+    var c = e.target.closest("[data-copy]");
+    if (c){ var src = $(c.getAttribute("data-copy")); if(src) copy(src.textContent.trim(), "Texto copiado"); return; }
+    var t = e.target.closest("[data-copy-text]");
+    if (t){ copy(t.getAttribute("data-copy-text"), "Link copiado"); return; }
+  });
+
+  /* ---------- 05 · filtro + orden ---------- */
+  var grid  = $("#grid");
+  var empty = $("#empty");
+  var items = $$(".item", grid);
+  var chips = $$(".chip");
+  var sortSel = $("#sort");
+  var current = "todos";
+
+  function apply(){
+    var shown = 0;
+    items.forEach(function(el){
+      var ok = current === "todos" || el.getAttribute("data-amb") === current;
+      el.hidden = !ok;
+      if (ok) shown++;
+    });
+    empty.hidden = shown > 0;
+
+    var mode = sortSel.value;
+    var order = items.slice().sort(function(a,b){
+      var pa = +a.getAttribute("data-price"), pb = +b.getAttribute("data-price");
+      var fa = a.hasAttribute("data-falta") ? +a.getAttribute("data-falta") : Infinity;
+      var fb = b.hasAttribute("data-falta") ? +b.getAttribute("data-falta") : Infinity;
+      var da = a.getAttribute("data-state") === "donado" ? 1 : 0;
+      var db = b.getAttribute("data-state") === "donado" ? 1 : 0;
+      if (mode === "falta"){
+        if (fa !== fb) return fa - fb;
+        if (da !== db) return da - db;
+        return pa - pb;
+      }
+      if (da !== db) return da - db;
+      return mode === "desc" ? pb - pa : pa - pb;
+    });
+    order.forEach(function(el){ grid.appendChild(el); });
+    grid.appendChild(empty);
+  }
+
+  chips.forEach(function(ch){
+    ch.addEventListener("click", function(){
+      chips.forEach(function(o){ o.setAttribute("aria-pressed", o === ch ? "true" : "false"); });
+      current = ch.getAttribute("data-amb");
+      apply();
+    });
+  });
+  sortSel.addEventListener("change", apply);
+  apply();
+
+  /* ---------- 06 · presets + monto libre ---------- */
+  function wirePresets(wrapId, inputId){
+    var wrap = $(wrapId), input = $(inputId);
+    if (!wrap || !input) return;
+    $$("button", wrap).forEach(function(b){
+      b.addEventListener("click", function(){
+        $$("button", wrap).forEach(function(o){ o.setAttribute("aria-pressed", o === b ? "true":"false"); });
+        input.value = Number(b.getAttribute("data-amt")).toLocaleString("es-AR");
+      });
+    });
+    input.addEventListener("input", function(){
+      var raw = input.value.replace(/\D/g,"");
+      input.value = raw ? Number(raw).toLocaleString("es-AR") : "";
+      $$("button", wrap).forEach(function(o){ o.setAttribute("aria-pressed","false"); });
+    });
+  }
+  wirePresets("#pre-once","#amt-once");
+  wirePresets("#pre-mes","#amt-mes");
+
+  /* ---------- checkout modal ---------- */
+  var ov = $("#ov"), mAmt = $("#m-amt"), trAmt = $("#tr-amt"), mSc = $("#m-sc"),
+      mTitle = $("#m-t"), mGo = $("#m-go"), lastFocus = null, amount = 0;
+
+  function setGo(){
+    var monthly    = ov.getAttribute("data-monthly") === "1";
+    var onTransfer = tabTr.getAttribute("aria-selected") === "true";
+    var link = monthly ? LINK_MENSUAL : LINK_UNICO;
+    if (!onTransfer && link){
+      mGo.setAttribute("href", link);
+      mGo.setAttribute("target", "_blank");
+      mGo.setAttribute("rel", "noopener");
+    } else {
+      mGo.removeAttribute("href");
+      mGo.removeAttribute("target");
+      mGo.removeAttribute("rel");
+    }
+  }
+
+  function setAmount(n){
+    amount = Math.max(0, Math.round(Number(n)||0));
+    mAmt.textContent = money(amount);
+    trAmt.textContent = money(amount);
+    mGo.textContent = amount > 0 ? ("Ir a pagar " + money(amount)) : "Ir a pagar";
+  }
+
+  function openModal(btn){
+    var concept = btn.getAttribute("data-concept") || "Aporte para la obra";
+    var monthly = btn.getAttribute("data-monthly") === "1";
+    var from    = btn.getAttribute("data-from");
+    var amt     = btn.getAttribute("data-amount");
+
+    if (from === "once") amt = ($("#amt-once").value || "0").replace(/\D/g,"");
+    if (from === "mes")  amt = ($("#amt-mes").value  || "0").replace(/\D/g,"");
+
+    setAmount(amt);
+    mTitle.textContent = monthly ? "Hacete socio" : "Completá tu donación";
+    mSc.textContent = concept;
+    document.getElementById("mp-mensual").hidden = !monthly;
+    document.getElementById("mp-unico").hidden   = monthly;
+    ov.setAttribute("data-monthly", monthly ? "1" : "0");
+    pick("mp");
+    mGo.textContent = monthly
+      ? (amount > 0 ? ("Suscribirme por " + money(amount) + " al mes") : "Suscribirme")
+      : (amount > 0 ? ("Ir a pagar " + money(amount)) : "Ir a pagar");
+
+    setGo();
+    lastFocus = btn;
+    ov.hidden = false;
+    document.body.style.overflow = "hidden";
+    $("#m-x").focus();
+  }
+  function closeModal(){
+    ov.hidden = true;
+    document.body.style.overflow = "";
+    if (lastFocus) lastFocus.focus();
+  }
+
+  document.addEventListener("click", function(e){
+    var o = e.target.closest("[data-open]");
+    if (o){ e.preventDefault(); openModal(o); return; }
+    if (e.target === ov){ closeModal(); return; }
+    if (e.target.closest("#m-x")){ closeModal(); return; }
+  });
+  document.addEventListener("keydown", function(e){
+    if (ov.hidden) return;
+    if (e.key === "Escape"){ closeModal(); return; }
+    if (e.key === "Tab"){
+      var f = $$('button,[href],input,select,textarea', ov).filter(function(el){ return !el.disabled && el.offsetParent !== null; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length-1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+
+  /* tabs */
+  var tabMp = $("#tab-mp"), tabTr = $("#tab-tr"), pMp = $("#p-mp"), pTr = $("#p-tr");
+  function pick(which){
+    var mp = which === "mp";
+    tabMp.setAttribute("aria-selected", mp ? "true":"false");
+    tabTr.setAttribute("aria-selected", mp ? "false":"true");
+    pMp.hidden = !mp; pTr.hidden = mp;
+    setGo();
+  }
+  tabMp.addEventListener("click", function(){ pick("mp"); });
+  tabTr.addEventListener("click", function(){ pick("tr"); });
+  $("#cp-amt").addEventListener("click", function(){ copy(String(amount), "Monto copiado"); });
+
+  mGo.addEventListener("click", function(e){
+    if (mGo.hasAttribute("href")) return;   /* es un link real: que lo abra el navegador */
+    e.preventDefault();
+    if (tabTr.getAttribute("aria-selected") === "true"){
+      toast("Copiá el alias o el CVU y transferí desde tu banco"); return;
+    }
+    pick("tr"); toast("Usá transferencia");
+  });
+  mGo.addEventListener("keydown", function(e){
+    if ((e.key === "Enter" || e.key === " ") && !mGo.hasAttribute("href")){ e.preventDefault(); mGo.click(); }
+  });
+
+  /* ---------- 10 · QR a la suscripción mensual ---------- */
+  try {
+    if (typeof qrcode === "function"){
+      var q = qrcode(0, "M");
+      q.addData(LINK_MENSUAL);
+      q.make();
+      $("#qr").innerHTML = q.createSvgTag({ cellSize: 5, margin: 0, scalable: true });
+      var qsvg = $("#qr svg");
+      if (qsvg){ qsvg.style.width = "100%"; qsvg.style.height = "auto"; qsvg.setAttribute("role","img");
+                 qsvg.setAttribute("aria-label","Código QR que lleva a la suscripción mensual"); }
+    } else { $("#qr").innerHTML = '<div class="fb">' + LINK_MENSUAL + '</div>'; }
+  } catch(err){ $("#qr").innerHTML = '<div class="fb">' + LINK_MENSUAL + '</div>'; }
+  $("#qr-copy").addEventListener("click", function(){ copy(LINK_MENSUAL, "Link copiado"); });
+
+  /* ---------- 10 · flyer dibujado como PNG real ---------- */
+  function paintFlyer(){
+    var W = 720, H = 1280, c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    var x = c.getContext("2d");
+    if (!x) return;
+    var F = 'Raleway, "Helvetica Neue", Arial, sans-serif';
+    function ls(v){ try { x.letterSpacing = v; } catch(e){} }
+
+    x.fillStyle = "#FFFFFF"; x.fillRect(0, 0, W, H);
+    x.fillStyle = "#E8F5F3"; x.fillRect(0, 0, W, 430);
+
+    /* arcoíris del logo */
+    var arcs = [["#E68A75", 208], ["#EDCDB9", 168], ["#C9A23A", 128], ["#ADD0C9", 88], ["#4DAB9A", 48]];
+    x.lineWidth = 26; x.lineCap = "round";
+    for (var i = 0; i < arcs.length; i++){
+      x.strokeStyle = arcs[i][0];
+      x.beginPath(); x.arc(360, 300, arcs[i][1], Math.PI, 0); x.stroke();
+    }
+    x.fillStyle = "#FFFFFF";
+    x.beginPath(); x.moveTo(336, 300); x.lineTo(336, 268); x.lineTo(360, 248);
+    x.lineTo(384, 268); x.lineTo(384, 300); x.closePath(); x.fill();
+
+    x.textAlign = "center"; x.fillStyle = "#1A2620";
+    ls("6px"); x.font = "700 21px " + F;
+    x.fillText("HOGAR EL ABRAZO · PILAR", 360, 372);
+
+    /* achica la tipografía sola si alguna línea no entra en el ancho útil */
+    function fit(txt, size, max){
+      var s = size;
+      while (s > 28){ x.font = "800 " + s + "px " + F; if (x.measureText(txt).width <= max) break; s -= 2; }
+      return s;
+    }
+    ls("-2px"); x.textAlign = "left"; x.fillStyle = "#1A2620";
+    var L = ["Elegí tu aporte", "para abrazar", "la obra."], base = 64;
+    for (var t = 0; t < L.length; t++) base = Math.min(base, fit(L[t], 64, 600));
+    x.font = "800 " + base + "px " + F;
+    x.fillText(L[0], 60, 552);
+    x.fillText(L[1], 60, 552 + base * 1.16);
+    x.fillStyle = "#2E7D6E"; x.fillText(L[2], 60, 552 + base * 2.32);
+
+    ls("0px"); x.fillStyle = "#5A6472"; x.font = "500 30px " + F;
+    x.fillText("Queda a tu nombre en la lista.", 60, 552 + base * 2.32 + 54);
+
+    /* tarjeta de progreso */
+    x.fillStyle = "#F8F7F5"; x.strokeStyle = "#E4E2DE"; x.lineWidth = 2;
+    if (x.roundRect){ x.beginPath(); x.roundRect(60, 812, 600, 244, 26); x.fill(); x.stroke(); }
+    else { x.fillRect(60, 812, 600, 244); x.strokeRect(60, 812, 600, 244); }
+
+    ls("3px"); x.fillStyle = "#5A6472"; x.font = "700 18px " + F;
+    x.fillText("ETAPA ACTUAL · PLOMERÍA", 96, 872);
+    ls("-2px"); x.fillStyle = "#1A2620"; x.font = "800 62px " + F;
+    x.fillText("$4.000.000", 96, 946);
+    ls("0px"); x.fillStyle = "#5A6472"; x.font = "500 24px " + F;
+    x.fillText("de $20.000.000 · 20%", 96, 984);
+
+    x.fillStyle = "#E8F5F3";
+    if (x.roundRect){ x.beginPath(); x.roundRect(96, 1004, 528, 18, 9); x.fill(); }
+    else x.fillRect(96, 1004, 528, 18);
+    var g = x.createLinearGradient(96, 0, 624, 0);
+    g.addColorStop(0, "#E68A75"); g.addColorStop(0.5, "#C9A23A"); g.addColorStop(1, "#4DAB9A");
+    x.fillStyle = g;
+    if (x.roundRect){ x.beginPath(); x.roundRect(96, 1004, 106, 18, 9); x.fill(); }
+    else x.fillRect(96, 1004, 106, 18);
+
+    x.textAlign = "center"; ls("-1px"); x.fillStyle = "#1A2620"; x.font = "800 38px " + F;
+    x.fillText("Los regalos arrancan en $9.000", 360, 1122);
+
+    x.fillStyle = "#2E7D6E";
+    if (x.roundRect){ x.beginPath(); x.roundRect(150, 1166, 420, 72, 36); x.fill(); }
+    else x.fillRect(150, 1166, 420, 72);
+    ls("2px"); x.fillStyle = "#FFFFFF"; x.font = "700 26px " + F;
+    x.fillText(PAGE_URL, 360, 1212);
+    ls("0px");
+
+    try {
+      var url = c.toDataURL("image/png");
+      var im = $("#flyer-img"), dl = $("#flyer-dl");
+      if (im) im.src = url;
+      if (dl){
+        dl.href = url;
+        var canDownload = "download" in document.createElement("a") && window.top === window.self;
+        if (canDownload) dl.hidden = false;
+      }
+    } catch(e){}
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(paintFlyer);
+  else window.addEventListener("load", paintFlyer);
+})();
+</script>
