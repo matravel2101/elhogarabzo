@@ -1,4 +1,7 @@
+<!doctype html>
+<html lang="es">
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>La lista de El Abrazo</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap">
 <style>
@@ -169,6 +172,8 @@ section{padding:52px 0}
 .item:hover{box-shadow:var(--shadow);border-color:var(--rule-2)}
 .item .amb{font-family:var(--f-d);font-weight:700;font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
 .item .scene{font-size:1.02rem;line-height:1.36;font-weight:500;flex:1}
+.item .det{font-size:.84rem;line-height:1.45;color:var(--ink-2);flex:1;margin-top:-5px}
+.item .scene:has(+ .det){flex:none}
 .item .row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .item .price{font-family:var(--f-b);font-weight:700;font-size:1.42rem;font-variant-numeric:tabular-nums;letter-spacing:-.028em;line-height:1}
 .item .falta{display:block;font-family:var(--f-m);font-size:.79rem;color:var(--parcial);margin-top:4px;font-weight:500}
@@ -412,6 +417,16 @@ footer{background:var(--panel);color:var(--panel-ink);margin-top:44px;padding:44
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
     transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+/* celular: sin scroll lateral, y campos de 16px para que iOS no haga zoom al tocarlos */
+html,body{overflow-x:clip}
+@media(max-width:639px){
+  .wrap,.hdr-in{padding-left:16px;padding-right:16px}
+  input,select,textarea{font-size:16px!important}
+  .chips{margin:0 -16px;padding:0 16px 2px}
+  .item .btn-i{padding:12px 18px}
+  .toast{bottom:calc(20px + env(safe-area-inset-bottom));max-width:calc(100vw - 32px);text-align:center}
+  .m-foot{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>

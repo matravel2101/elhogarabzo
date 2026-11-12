@@ -19,6 +19,7 @@ AMB = [
     ("obra",     "Obra gruesa"),
     ("patio",    "Patio"),
     ("manodeobra","Mano de obra"),
+    ("plomeria", "Agua, gas y desagües"),
 ]
 
 # (amb, escena, precio, estado, dato)
@@ -64,7 +65,35 @@ ITEMS = [
  ("patio","La reja del patio",290000,"libre",None),
  ("patio","La hamaca",118000,"parcial",71000),
  ("patio","El pasto del patio",88000,"libre",None),
+
+ # materiales de plomería (lista "materiales hogar.docx"); precios estimados
+ ("plomeria","Los caños del agua fría y caliente",390000,"libre",None),
+ ("plomeria","Los caños de los desagües",275000,"libre",None),
+ ("plomeria","Ramales, curvas y cuplas de los desagües",175000,"libre",None),
+ ("plomeria","Las 12 llaves de paso del agua",145000,"libre",None),
+ ("plomeria","Las conexiones y llaves del gas",130000,"libre",None),
+ ("plomeria","Las salidas para canillas y duchas",115000,"libre",None),
+ ("plomeria","Las T y reducciones del agua",90000,"libre",None),
+ ("plomeria","Los caños del gas",70000,"libre",None),
+ ("plomeria","Codos y curvas del agua",66000,"libre",None),
+ ("plomeria","Las cinco piletas de patio",60000,"libre",None),
+ ("plomeria","Discos de corte y lubricante",35000,"libre",None),
 ]
+
+# detalle de materiales que se muestra debajo del título de la tarjeta
+DETALLE = {
+ "Los caños del agua fría y caliente": "2 caños fusión 50 mm · 10 de 32 mm · 20 de 25 mm",
+ "Los caños de los desagües": "7 caños de 110 mm · 6 de 40 mm · 1 de 63 mm",
+ "Ramales, curvas y cuplas de los desagües": "9 ramales de 110 mm · 4 curvas 90° 110 mm · 5 cuplas 110 mm · 35 curvas de 40 y 63 mm · 10 reducciones",
+ "Las 12 llaves de paso del agua": "12 llaves esféricas fusión 25 mm",
+ "Las conexiones y llaves del gas": "3 llaves esféricas 25 mm · 24 codos (4 con rosca) · 5 cuplas · 3 T · 2 reducciones 32 a 25 mm",
+ "Las salidas para canillas y duchas": "24 codos 90° 25 mm con rosca hembra · 10 tubos 25 mm con rosca hembra ½",
+ "Las T y reducciones del agua": "30 T de 25 mm · 6 T de 50 mm · 16 reducciones · 2 tapones 50 mm",
+ "Los caños del gas": "2 tiras de caño fusión 25 mm · 1 tira de 32 mm",
+ "Codos y curvas del agua": "60 codos 90° 25 mm · 10 curvas 90° 32 mm · 10 sobrepasos 25 mm",
+ "Las cinco piletas de patio": "5 piletas de patio",
+ "Discos de corte y lubricante": "5 discos de corte de 110 mm para pared · 4 aerosoles lubricantes",
+}
 
 REALES = {"Una semana de los dos obreros"}
 LAB = dict(AMB)
@@ -87,6 +116,8 @@ def card(it):
         top.append('<span class="badge-real">dato real</span>')
     body.append('<div class="item-top">%s</div>' % "".join(top))
     body.append('<p class="scene">%s</p>' % esc)
+    if scene in DETALLE:
+        body.append('<p class="det">%s</p>' % html.escape(DETALLE[scene]))
 
     if state == "donado":
         cls.append("item-donado")
@@ -179,7 +210,7 @@ IMG = {
 out = (open("tpl_head.html").read() + open("tpl_body.html").read() + open("tpl_js.html").read())
 out = out.replace("{{ITEMS}}", items_html).replace("{{CHIPS}}", chips_html)
 out = out.replace("{{FOUNDERS}}", founders_html).replace("{{NAMES}}", names_html)
-out = out.replace("{{FLYER}}", FLYER).replace("{{URL}}", URL)
+out = out.replace("{{NITEMS}}", str(len(ITEMS))).replace("{{FLYER}}", FLYER).replace("{{URL}}", URL)
 for k, v in IMG.items():
     out = out.replace(k, v)
 

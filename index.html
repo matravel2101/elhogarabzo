@@ -1,4 +1,7 @@
+<!doctype html>
+<html lang="es">
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>La lista de El Abrazo</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap">
 <style>
@@ -169,6 +172,8 @@ section{padding:52px 0}
 .item:hover{box-shadow:var(--shadow);border-color:var(--rule-2)}
 .item .amb{font-family:var(--f-d);font-weight:700;font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
 .item .scene{font-size:1.02rem;line-height:1.36;font-weight:500;flex:1}
+.item .det{font-size:.84rem;line-height:1.45;color:var(--ink-2);flex:1;margin-top:-5px}
+.item .scene:has(+ .det){flex:none}
 .item .row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .item .price{font-family:var(--f-b);font-weight:700;font-size:1.42rem;font-variant-numeric:tabular-nums;letter-spacing:-.028em;line-height:1}
 .item .falta{display:block;font-family:var(--f-m);font-size:.79rem;color:var(--parcial);margin-top:4px;font-weight:500}
@@ -412,7 +417,17 @@ footer{background:var(--panel);color:var(--panel-ink);margin-top:44px;padding:44
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
     transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+/* celular: sin scroll lateral, y campos de 16px para que iOS no haga zoom al tocarlos */
+html,body{overflow-x:clip}
+@media(max-width:639px){
+  .wrap,.hdr-in{padding-left:16px;padding-right:16px}
+  input,select,textarea{font-size:16px!important}
+  .chips{margin:0 -16px;padding:0 16px 2px}
+  .item .btn-i{padding:12px 18px}
+  .toast{bottom:calc(20px + env(safe-area-inset-bottom));max-width:calc(100vw - 32px);text-align:center}
+  .m-foot{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 
@@ -460,7 +475,7 @@ html{scroll-behavior:smooth}
           <span><b>20%</b> de la etapa</span><span class="dot"></span>
           <span><b>+300</b> ya donaron</span>
         </div>
-        <p class="entry">32 regalos concretos para elegir, desde <b>$9.000</b> hasta <b>$900.000</b>.</p>
+        <p class="entry">43 regalos concretos para elegir, desde <b>$9.000</b> hasta <b>$900.000</b>.</p>
         <div class="cta-wrap">
           <a class="btn btn-lg" href="#lista">Elegí qué regalar</a>
           <p class="cta-sub">o <button data-open data-concept="Aporte libre" data-amount="0">doná el monto que quieras</button></p>
@@ -535,7 +550,7 @@ html{scroll-behavior:smooth}
     </div>
 
     <div class="controls">
-      <div class="chips" role="group" aria-label="Filtrar por ambiente"><button class="chip" data-amb="todos" aria-pressed="true">Todos <i>32</i></button><button class="chip" data-amb="hermanos" aria-pressed="false">Cuarto de hermanos <i>4</i></button><button class="chip" data-amb="banos" aria-pressed="false">Baños <i>5</i></button><button class="chip" data-amb="cocina" aria-pressed="false">Cocina y comedor <i>6</i></button><button class="chip" data-amb="living" aria-pressed="false">Living y juegos <i>5</i></button><button class="chip" data-amb="obra" aria-pressed="false">Obra gruesa <i>8</i></button><button class="chip" data-amb="patio" aria-pressed="false">Patio <i>3</i></button><button class="chip" data-amb="manodeobra" aria-pressed="false">Mano de obra <i>1</i></button></div>
+      <div class="chips" role="group" aria-label="Filtrar por ambiente"><button class="chip" data-amb="todos" aria-pressed="true">Todos <i>43</i></button><button class="chip" data-amb="hermanos" aria-pressed="false">Cuarto de hermanos <i>4</i></button><button class="chip" data-amb="banos" aria-pressed="false">Baños <i>5</i></button><button class="chip" data-amb="cocina" aria-pressed="false">Cocina y comedor <i>6</i></button><button class="chip" data-amb="living" aria-pressed="false">Living y juegos <i>5</i></button><button class="chip" data-amb="obra" aria-pressed="false">Obra gruesa <i>8</i></button><button class="chip" data-amb="patio" aria-pressed="false">Patio <i>3</i></button><button class="chip" data-amb="manodeobra" aria-pressed="false">Mano de obra <i>1</i></button><button class="chip" data-amb="plomeria" aria-pressed="false">Agua, gas y desagües <i>11</i></button></div>
       <div class="sorter">
         <label for="sort">Ordenar</label>
         <select id="sort">
@@ -578,6 +593,17 @@ html{scroll-behavior:smooth}
       <article class="item" data-amb="patio" data-price="290000" data-state="libre"><div class="item-top"><span class="amb">Patio</span></div><p class="scene">La reja del patio</p><div class="row"><span class="price-block"><span class="price">$290.000</span></span><button class="btn-i" data-open data-concept="La reja del patio" data-amount="290000">Regalar esto</button></div><div class="foot"><span class="split">Aportá una parte<button data-open data-concept="La reja del patio (25%)" data-amount="72500">25%</button><button data-open data-concept="La reja del patio (50%)" data-amount="145000">50%</button></span></div></article>
       <article class="item item-parcial" data-amb="patio" data-price="118000" data-state="parcial" data-falta="47000"><div class="item-top"><span class="amb">Patio</span></div><p class="scene">La hamaca</p><div class="rail" role="img" aria-label="60 por ciento reunido"><i style="width:60%"></i></div><div class="row"><span class="price-block"><span class="price">$118.000</span><span class="falta">Faltan $47.000 de $118.000</span></span><button class="btn-i" data-open data-concept="Completar: La hamaca" data-amount="47000">Completar este regalo</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
       <article class="item" data-amb="patio" data-price="88000" data-state="libre"><div class="item-top"><span class="amb">Patio</span></div><p class="scene">El pasto del patio</p><div class="row"><span class="price-block"><span class="price">$88.000</span></span><button class="btn-i" data-open data-concept="El pasto del patio" data-amount="88000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="390000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Los caños del agua fría y caliente</p><p class="det">2 caños fusión 50 mm · 10 de 32 mm · 20 de 25 mm</p><div class="row"><span class="price-block"><span class="price">$390.000</span></span><button class="btn-i" data-open data-concept="Los caños del agua fría y caliente" data-amount="390000">Regalar esto</button></div><div class="foot"><span class="split">Aportá una parte<button data-open data-concept="Los caños del agua fría y caliente (25%)" data-amount="97500">25%</button><button data-open data-concept="Los caños del agua fría y caliente (50%)" data-amount="195000">50%</button></span></div></article>
+      <article class="item" data-amb="plomeria" data-price="275000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Los caños de los desagües</p><p class="det">7 caños de 110 mm · 6 de 40 mm · 1 de 63 mm</p><div class="row"><span class="price-block"><span class="price">$275.000</span></span><button class="btn-i" data-open data-concept="Los caños de los desagües" data-amount="275000">Regalar esto</button></div><div class="foot"><span class="split">Aportá una parte<button data-open data-concept="Los caños de los desagües (25%)" data-amount="68750">25%</button><button data-open data-concept="Los caños de los desagües (50%)" data-amount="137500">50%</button></span></div></article>
+      <article class="item" data-amb="plomeria" data-price="175000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Ramales, curvas y cuplas de los desagües</p><p class="det">9 ramales de 110 mm · 4 curvas 90° 110 mm · 5 cuplas 110 mm · 35 curvas de 40 y 63 mm · 10 reducciones</p><div class="row"><span class="price-block"><span class="price">$175.000</span></span><button class="btn-i" data-open data-concept="Ramales, curvas y cuplas de los desagües" data-amount="175000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="145000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Las 12 llaves de paso del agua</p><p class="det">12 llaves esféricas fusión 25 mm</p><div class="row"><span class="price-block"><span class="price">$145.000</span></span><button class="btn-i" data-open data-concept="Las 12 llaves de paso del agua" data-amount="145000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="130000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Las conexiones y llaves del gas</p><p class="det">3 llaves esféricas 25 mm · 24 codos (4 con rosca) · 5 cuplas · 3 T · 2 reducciones 32 a 25 mm</p><div class="row"><span class="price-block"><span class="price">$130.000</span></span><button class="btn-i" data-open data-concept="Las conexiones y llaves del gas" data-amount="130000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="115000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Las salidas para canillas y duchas</p><p class="det">24 codos 90° 25 mm con rosca hembra · 10 tubos 25 mm con rosca hembra ½</p><div class="row"><span class="price-block"><span class="price">$115.000</span></span><button class="btn-i" data-open data-concept="Las salidas para canillas y duchas" data-amount="115000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="90000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Las T y reducciones del agua</p><p class="det">30 T de 25 mm · 6 T de 50 mm · 16 reducciones · 2 tapones 50 mm</p><div class="row"><span class="price-block"><span class="price">$90.000</span></span><button class="btn-i" data-open data-concept="Las T y reducciones del agua" data-amount="90000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="70000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Los caños del gas</p><p class="det">2 tiras de caño fusión 25 mm · 1 tira de 32 mm</p><div class="row"><span class="price-block"><span class="price">$70.000</span></span><button class="btn-i" data-open data-concept="Los caños del gas" data-amount="70000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="66000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Codos y curvas del agua</p><p class="det">60 codos 90° 25 mm · 10 curvas 90° 32 mm · 10 sobrepasos 25 mm</p><div class="row"><span class="price-block"><span class="price">$66.000</span></span><button class="btn-i" data-open data-concept="Codos y curvas del agua" data-amount="66000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="60000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Las cinco piletas de patio</p><p class="det">5 piletas de patio</p><div class="row"><span class="price-block"><span class="price">$60.000</span></span><button class="btn-i" data-open data-concept="Las cinco piletas de patio" data-amount="60000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
+      <article class="item" data-amb="plomeria" data-price="35000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Discos de corte y lubricante</p><p class="det">5 discos de corte de 110 mm para pared · 4 aerosoles lubricantes</p><div class="row"><span class="price-block"><span class="price">$35.000</span></span><button class="btn-i" data-open data-concept="Discos de corte y lubricante" data-amount="35000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
       <p class="empty" id="empty" hidden>No hay regalos en ese ambiente todavía.</p>
     </div>
   </div>

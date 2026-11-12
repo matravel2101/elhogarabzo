@@ -42,7 +42,7 @@ Escribe `abrazo-sumate.html`; copiarlo a `index.html` en la raíz.
 (fotos y profesiones), los donantes del muro, el logo y el render.
 
 **Todavía estimados:** los precios de la lista de regalos salvo "Una semana de los dos obreros"
-($900.000), la rendición de en qué se gastó, y las fechas de las fotos de obra.
+($900.000) —incluidos los 11 regalos de "Agua, gas y desagües", armados con la lista de materiales de plomería—, la rendición de en qué se gastó, y las fechas de las fotos de obra.
 
 ## Cobro
 
