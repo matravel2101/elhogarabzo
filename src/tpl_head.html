@@ -202,6 +202,12 @@ section{padding:52px 0}
   font-family:var(--f-d);font-weight:700;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
   padding:3px 7px;border-radius:5px}
 .item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+/* en celular la lista arranca colapsada: muestra LIMIT regalos y un botón "Ver más" */
+.item[hidden]{display:none}
+.more{margin-top:14px}
+.grid{scroll-margin-top:calc(var(--hdr) + 76px)}
+@media(max-width:639px){.grid:not(.open) .item.extra{display:none}}
+@media(min-width:640px){.more{display:none!important}}
 .empty{grid-column:1/-1;text-align:center;padding:44px 20px;color:var(--ink-3);border:1px dashed var(--rule-2);border-radius:13px}
 
 /* ---------- 06 libre + mensual ---------- */

@@ -202,6 +202,12 @@ section{padding:52px 0}
   font-family:var(--f-d);font-weight:700;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
   padding:3px 7px;border-radius:5px}
 .item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+/* en celular la lista arranca colapsada: muestra LIMIT regalos y un botón "Ver más" */
+.item[hidden]{display:none}
+.more{margin-top:14px}
+.grid{scroll-margin-top:calc(var(--hdr) + 76px)}
+@media(max-width:639px){.grid:not(.open) .item.extra{display:none}}
+@media(min-width:640px){.more{display:none!important}}
 .empty{grid-column:1/-1;text-align:center;padding:44px 20px;color:var(--ink-3);border:1px dashed var(--rule-2);border-radius:13px}
 
 /* ---------- 06 libre + mensual ---------- */
@@ -606,6 +612,7 @@ html,body{overflow-x:clip}
       <article class="item" data-amb="plomeria" data-price="35000" data-state="libre"><div class="item-top"><span class="amb">Agua, gas y desagües</span></div><p class="scene">Discos de corte y lubricante</p><p class="det">5 discos de corte de 110 mm para pared · 4 aerosoles lubricantes</p><div class="row"><span class="price-block"><span class="price">$35.000</span></span><button class="btn-i" data-open data-concept="Discos de corte y lubricante" data-amount="35000">Regalar esto</button></div><div class="foot"><span class="split" style="color:var(--ink-3)">Queda a tu nombre en la lista</span></div></article>
       <p class="empty" id="empty" hidden>No hay regalos en ese ambiente todavía.</p>
     </div>
+    <button class="btn btn-ghost btn-lg more" id="more" aria-controls="grid" aria-expanded="false" hidden></button>
   </div>
 </section>
 
@@ -962,12 +969,27 @@ Acá está: hogarelabrazo.ar/sumate</div>
     });
     order.forEach(function(el){ grid.appendChild(el); });
     grid.appendChild(empty);
+
+    var n = 0;
+    order.forEach(function(el){ if (!el.hidden) el.classList.toggle("extra", ++n > LIMIT); });
+    more.hidden = shown <= LIMIT;
+    more.textContent = open ? "Ver menos" : "Ver los " + (shown - LIMIT) + " regalos restantes";
+    more.setAttribute("aria-expanded", open ? "true" : "false");
+    grid.classList.toggle("open", open);
   }
+
+  var LIMIT = 6, open = false, more = $("#more");
+  more.addEventListener("click", function(){
+    open = !open;
+    apply();
+    if (!open) grid.scrollIntoView({block: "start"});
+  });
 
   chips.forEach(function(ch){
     ch.addEventListener("click", function(){
       chips.forEach(function(o){ o.setAttribute("aria-pressed", o === ch ? "true" : "false"); });
       current = ch.getAttribute("data-amb");
+      open = false;
       apply();
     });
   });

@@ -85,12 +85,27 @@
     });
     order.forEach(function(el){ grid.appendChild(el); });
     grid.appendChild(empty);
+
+    var n = 0;
+    order.forEach(function(el){ if (!el.hidden) el.classList.toggle("extra", ++n > LIMIT); });
+    more.hidden = shown <= LIMIT;
+    more.textContent = open ? "Ver menos" : "Ver los " + (shown - LIMIT) + " regalos restantes";
+    more.setAttribute("aria-expanded", open ? "true" : "false");
+    grid.classList.toggle("open", open);
   }
+
+  var LIMIT = 6, open = false, more = $("#more");
+  more.addEventListener("click", function(){
+    open = !open;
+    apply();
+    if (!open) grid.scrollIntoView({block: "start"});
+  });
 
   chips.forEach(function(ch){
     ch.addEventListener("click", function(){
       chips.forEach(function(o){ o.setAttribute("aria-pressed", o === ch ? "true" : "false"); });
       current = ch.getAttribute("data-amb");
+      open = false;
       apply();
     });
   });
